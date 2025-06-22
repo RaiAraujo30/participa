@@ -11,6 +11,7 @@ class FileType implements Rule
     private $acceptedTypes;
 
     private $arquivo;
+    private $modalidade;
 
     /**
      * Create a new rule instance.
@@ -21,6 +22,7 @@ class FileType implements Rule
     {
         if ($eh_modalidade) {
             $this->acceptedTypes = $modalidade->tiposAceitos();
+            $this->modalidade = $modalidade;
         } else {
             $this->acceptedTypes = $midia->tiposAceitos();
         }
@@ -30,17 +32,19 @@ class FileType implements Rule
     public function passes($attribute, $value): bool
     {
         try {
-            $type = $this->arquivo->getClientOriginalExtension();
+            $type = $this->modalidade->link ? 'link' : $this->arquivo->getClientOriginalExtension();
             $tamanhoMB = $this->arquivo->getSize() / 1024 / 1024;
 
             return in_array($type, $this->acceptedTypes) && $this->checkTamanhoTipo($type, $tamanhoMB);
         } catch (\Throwable $th) {
+            dd('to caindo no passes')
             return false;
         }
     }
 
     public function message(): string
     {
+        dd($this);
         $types = implode(', ', $this->acceptedTypes);
         $texto = 'Arquivo inválido. Os tipos válidos são: '.$types;
         $diff = false;

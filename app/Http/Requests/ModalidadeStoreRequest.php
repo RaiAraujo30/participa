@@ -46,6 +46,7 @@ class ModalidadeStoreRequest extends FormRequest
             'texto' => ['nullable'],
             'limit' => ['required_with:texto', 'nullable'],
             'arquivo' => ['nullable'],
+            'link' => ['nullable'],
             'submissaoUnica' => ['nullable'],
             'apresentacao' => ['nullable'],
             'presencial' => ['exclude_unless:apresentacao,on', 'required_without_all:remoto,a_distancia,semipresencial'],
@@ -155,6 +156,7 @@ class ModalidadeStoreRequest extends FormRequest
             'ods' => $this->boolean('ods'),
             'xlsx' => $this->boolean('xlsx'),
             'avaliacaoDuranteSubmissao' => $this->boolean('avaliacaoDuranteSubmissao'),
+            'link' => $this->boolean('link'),
         ]);
 
         return $validated;

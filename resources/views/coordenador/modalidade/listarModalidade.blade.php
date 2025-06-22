@@ -167,7 +167,7 @@
                                             </span>
                                             @enderror
                                         </div>
-                                    </div>{{-- end row --}}    
+                                    </div>{{-- end row --}}
                                     <div class="row mt-2"> {{-- Label Row (mt-2 para espaçamento opcional) --}}
                                         <div class="col-sm-12">
                                             <label for="nomeModalidadeEdit_es{{$modalidade->id}}" class="col-form-label font-weight-bold">{{ __('Nome (Espanhol)') }}</label> {{-- Sem '*' se for nullable --}}
@@ -620,6 +620,11 @@
                                                         .svg
                                                     </label>
                                                 </div>
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="checkbox" id="linkEdit" name="link{{$modalidade->id}}" @if(old('link'.$modalidade->id) == "on") checked @elseif (old('link'.$modalidade->id) == null && $modalidade->link == true) checked @endif>
+                                                    <label class="form-check-label" for="linkEdit">
+                                                        link
+                                                    </label>
                                             </div>
                                         </div>
                                     </div>

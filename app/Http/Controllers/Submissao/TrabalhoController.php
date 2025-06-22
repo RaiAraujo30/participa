@@ -56,6 +56,22 @@ class TrabalhoController extends Controller
         $modalidades = Modalidade::where('evento_id', $evento->id)->orderBy('nome')->get();
         $modalidades = $modalidades->sortBy('nome', SORT_NATURAL)->values()->all();
         $formSubTraba = FormSubmTraba::where('eventoId', $evento->id)->first();
+
+        // Buscar a modalidade atual
+        $modalidade = null;
+        if ($idModalidade && is_numeric($idModalidade)) {
+            $modalidade = Modalidade::find($idModalidade);
+        }
+
+        // Se a modalidade não existir ou não pertencer ao evento, redirecionar para a primeira modalidade
+        if (!$modalidade || $modalidade->evento_id != $evento->id) {
+            if ($modalidades->count() > 0) {
+                return redirect()->route('trabalho.index', ['id' => $evento->id, 'idModalidade' => $modalidades->first()->id]);
+            } else {
+                abort(404, 'Nenhuma modalidade encontrada para este evento');
+            }
+        }
+
         $regra = RegraSubmis::where('modalidadeId', $idModalidade)->first();
         $template = TemplateSubmis::where('modalidadeId', $idModalidade)->first();
         $ordemCampos = explode(',', $formSubTraba->ordemCampos);
@@ -64,8 +80,8 @@ class TrabalhoController extends Controller
         $user = Auth::user();
 
         $mytime = Carbon::now('America/Recife');
-        foreach ($modalidades as $key => $modalidade){
-            if (!$modalidade->estaEmPeriodoDeSubmissao()) {
+        foreach ($modalidades as $key => $modalidadeOption){
+            if (!$modalidadeOption->estaEmPeriodoDeSubmissao()) {
                 if($user->can('isCoordenadorOrCoordCientificaOrCoordEixo', $evento)){
                     $this->authorize('isCoordenadorOrCoordCientificaOrCoordEixo', $evento);
                 } else {
@@ -91,6 +107,7 @@ class TrabalhoController extends Controller
             'regras' => $regra,
             'templates' => $template,
             'modalidades' => $modalidades,
+            'modalidade' => $modalidade,
         ]);
     }
 
@@ -151,7 +168,7 @@ class TrabalhoController extends Controller
             '/Ñ/' => 'N',
             '/–/' => '-',
             '/[’‘‹›‚]/u' => ' ',
-            '/[“”«»„]/u' => ' ',
+            '/[""«»„]/u' => ' ',
             '/ /' => ' ',
         ];
 
@@ -398,6 +415,12 @@ class TrabalhoController extends Controller
                     'nome' => $path,
                     'trabalhoId' => $trabalho->id,
                 ]);
+            }
+            if (isset($request->link)) {
+                $arquivo = new Arquivo();
+                $arquivo->nome = $request->link;
+                $arquivo->trabalhoId = $trabalho->id;
+                $arquivo->save();
             }
 
             $subject = 'Submissão de Trabalho';
@@ -1021,13 +1044,11 @@ class TrabalhoController extends Controller
 
                 return abort(404);
             } elseif (($revisor != null && $revisor->id == auth()->user()->id) || ($trabalho->status == 'avaliado' && $trabalho->autorId == auth()->user()->id) || ($trabalho->avaliado($revisor->user) && $trabalho->autorId == auth()->user()->id)) {
-                if ($revisor->trabalhosAtribuidos->contains($trabalho) || ($trabalho->autorId == auth()->user()->id)) {
-                    if (Storage::disk()->exists($arquivo->nome)) {
-                        return Storage::download($arquivo->nome);
-                    }
-
-                    return abort(404);
+                if (Storage::disk()->exists($arquivo->nome)) {
+                    return Storage::download($arquivo->nome);
                 }
+
+                return abort(404);
             }
 
             return abort(403);

@@ -188,11 +188,22 @@
                                                         <td>{{ $trabalho->id }}</td>
                                                         <td>
                                                             @if ($trabalho->arquivo && count($trabalho->arquivo) > 0)
-                                                                <a href="{{route('downloadTrabalho', ['id' => $trabalho->id])}}">
-                                                                    <span class="d-inline-block" class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" title="{{$trabalho->titulo}}">
-                                                                        {{$trabalho->titulo}}
-                                                                    </span>
-                                                                </a>
+                                                                @if($modalidade->link == true)
+                                                                    @php
+                                                                        $arquivo = $trabalho->arquivo()->first();
+                                                                    @endphp
+                                                                    <a href="{{$arquivo->nome}}" target="_blank">
+                                                                        <span class="d-inline-block" class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" title="{{$trabalho->titulo}}">
+                                                                            {{$trabalho->titulo}}
+                                                                        </span>
+                                                                    </a>
+                                                                @else
+                                                                    <a href="{{route('downloadTrabalho', ['id' => $trabalho->id])}}">
+                                                                        <span class="d-inline-block" class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" title="{{$trabalho->titulo}}">
+                                                                            {{$trabalho->titulo}}
+                                                                        </span>
+                                                                    </a>
+                                                                @endif
                                                             @else
                                                                 <span class="d-inline-block" class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" title="{{$trabalho->titulo}}">
                                                                     {{$trabalho->titulo}}

@@ -60,6 +60,7 @@ class ModalidadeController extends Controller
         $modalidade->evento_id = $request->eventoId;
         $modalidade->apresentacao = $request->apresentacao ? true : false;
         $modalidade->numMaxCoautores = $request->numMaxCoautores;
+        $modalidade->link = $request->has('link');
         $modalidade->save();
 
         if ($request->has('nomeDataExtra')) {
@@ -205,6 +206,7 @@ class ModalidadeController extends Controller
             'arquivoEdit' . $request->modalidadeEditId => ['nullable'],
             'apresentacao' => ['nullable'],
 
+            'link' . $request->modalidadeEditId => ['nullable'],
             'pdf' . $request->modalidadeEditId => ['nullable'],
             'docx' . $request->modalidadeEditId => ['nullable'],
             'odt' . $request->modalidadeEditId => ['nullable'],
@@ -303,7 +305,7 @@ class ModalidadeController extends Controller
 
         // Condição para opção de arquivo escolhida
         if ($request->input('arquivoEdit' . $request->modalidadeEditId) == true) {
-            if ($request->input('pdf' . $request->modalidadeEditId) == null && $request->input('jpg' . $request->modalidadeEditId) == null && $request->input('jpeg' . $request->modalidadeEditId) == null && $request->input('png' . $request->modalidadeEditId) == null && $request->input('docx' . $request->modalidadeEditId) == null && $request->input('odt' . $request->modalidadeEditId) == null && $request->input('odt' . $request->modalidadeEditId) == null && $request->input('svg' . $request->modalidadeEditId) == null && $request->input('mp4' . $request->modalidadeEditId) == null && $request->input('mp3' . $request->modalidadeEditId) == null) {
+            if ($request->input('pdf' . $request->modalidadeEditId) == null && $request->input('jpg' . $request->modalidadeEditId) == null && $request->input('jpeg' . $request->modalidadeEditId) == null && $request->input('png' . $request->modalidadeEditId) == null && $request->input('docx' . $request->modalidadeEditId) == null && $request->input('odt' . $request->modalidadeEditId) == null && $request->input('odt' . $request->modalidadeEditId) == null && $request->input('svg' . $request->modalidadeEditId) == null && $request->input('mp4' . $request->modalidadeEditId) == null && $request->input('mp3' . $request->modalidadeEditId) == null && $request->input('link' . $request->modalidadeEditId )) {
                 return redirect()->back()->withErrors(['marcarextensao' => 'O campo arquivo foi selecionado, mas nenhuma extensão foi selecionada.'])->withInput($request->all());
             }
             $modalidadeEdit->pdf = $request->input('pdf' . $request->modalidadeEditId) ? true : false;
@@ -328,6 +330,7 @@ class ModalidadeController extends Controller
             $modalidadeEdit->jpeg = $request->input('jpeg' . $request->modalidadeEditId) ? true : false;
             $modalidadeEdit->png = $request->input('png' . $request->modalidadeEditId) ? true : false;
             $modalidadeEdit->svg = $request->input('svg' . $request->modalidadeEditId) ? true : false;
+            $modalidadeEdit->link = $request->input('link' . $request->modalidadeEditId) ? true : false;
         } else {
             $modalidadeEdit->pdf = false;
             $modalidadeEdit->docx = false;
@@ -351,6 +354,7 @@ class ModalidadeController extends Controller
             $modalidadeEdit->jpeg = false;
             $modalidadeEdit->png = false;
             $modalidadeEdit->svg = false;
+            $modalidadeEdit->link = false;
         }
 
         if ($request->apresentacao) {

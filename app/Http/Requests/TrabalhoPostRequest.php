@@ -83,6 +83,13 @@ class TrabalhoPostRequest extends FormRequest
             'campoextra5grande_en' => ['nullable', 'string'],
         ];
 
+        // Adicionar validação do link se a modalidade tiver link
+        if ($modalidade->link) {
+            $validate_array['link'] = ['required', 'url'];
+        } else {
+            $validate_array['link'] = ['nullable', 'url'];
+        }
+
         foreach ($modalidade->midiasExtra as $midia) {
             $validate_array[$midia->hyphenizeNome()] = ['required', 'file', new FileType($modalidade, $midia, request()[$midia->hyphenizeNome()], false)];
         }

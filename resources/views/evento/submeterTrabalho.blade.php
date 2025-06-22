@@ -162,25 +162,26 @@
                                                         <label for="modalidade" class="col-form-label required-field"><strong>Modalidade</strong></label>
                                                         <select class="form-control custom-select @error('modalidadeId') is-invalid @enderror" id="modalidade"
                                                                 name="modalidadeId"
+                                                                onchange="alterarModalidade(this.value)"
                                                                 required>
                                                             <option value="" disabled selected hidden>
                                                                 Selecione a modalidade
                                                             </option>
                                                             {{-- Apenas um teste abaixo --}}
-                                                            @foreach($modalidades as $modalidade)
+                                                            @foreach($modalidades as $modalidadeOption)
                                                                 @php
-                                                                    $nomeModalidadeExibir = $modalidade->nome;
+                                                                    $nomeModalidadeExibir = $modalidadeOption->nome;
 
                                                                     if (isset($evento) && $evento->is_multilingual) {
-                                                                        if (Session::get('idiomaAtual') === 'en' && !empty($modalidade->nome_en)) {
-                                                                            $nomeModalidadeExibir = $modalidade->nome_en;
-                                                                        } elseif (Session::get('idiomaAtual') === 'es' && !empty($modalidade->nome_es)) {
-                                                                            $nomeModalidadeExibir = $modalidade->nome_es;
+                                                                        if (Session::get('idiomaAtual') === 'en' && !empty($modalidadeOption->nome_en)) {
+                                                                            $nomeModalidadeExibir = $modalidadeOption->nome_en;
+                                                                        } elseif (Session::get('idiomaAtual') === 'es' && !empty($modalidadeOption->nome_es)) {
+                                                                            $nomeModalidadeExibir = $modalidadeOption->nome_es;
                                                                         }
                                                                     }
                                                                 @endphp
-                                                                <option value="{{$modalidade->id}}"
-                                                                        @if(old('modalidadeId') == $modalidade->id) selected @endif>{{$nomeModalidadeExibir}}</option>
+                                                                <option value="{{$modalidadeOption->id}}"
+                                                                        @if(isset($modalidade) && $modalidade->id == $modalidadeOption->id) selected @endif>{{$nomeModalidadeExibir}}</option>
                                                             @endforeach
                                                         </select>
                                                         @error('modalidadeId')
@@ -243,7 +244,7 @@
                                             </div> --}}
                                             {{--@endif--}}
 
-                                            @if ($modalidade->texto && $indice == "etiquetaresumotrabalho")
+                                            @if (isset($modalidade) && $modalidade->texto && $indice == "etiquetaresumotrabalho")
 
                                                 @if ($modalidade->caracteres == true)
                                                         @if($evento->is_multilingual && Session::get('idiomaAtual') === 'en')
@@ -372,7 +373,7 @@
                                                 </div>
                                             @endif --}}
                                             @if ($indice == "apresentacao")
-                                                @if ($modalidade->apresentacao)
+                                                @if (isset($modalidade) && $modalidade->apresentacao)
                                                     <div class="row justify-content-center mt-4">
                                                         <div class="col-sm-12">
                                                             <label for="area"
@@ -398,7 +399,7 @@
                                                 <div class="row justify-content-center">
                                                     {{-- Submeter trabalho --}}
 
-                                                    @if ($modalidade->arquivo == true)
+                                                    @if (isset($modalidade) && $modalidade->arquivo == true && !$modalidade->link)
                                                         <div class="col-sm-12" style="margin-top: 20px;">
                                                             <label for="nomeTrabalho"
                                                                 class="col-form-label"><strong>{{$formSubTraba->etiquetauploadtrabalho}}</strong>
@@ -443,38 +444,52 @@
                                                             @enderror
                                                         </div>
                                                     @endif
+
+                                                    {{-- Exibe o campo de link --}}
+                                                    <div id="link-container" class="row justify-content-center" style="display:none;">
+                                                    <div class="col-sm-12">
+                                                        <label for="link" class="col-form-label required-field"><strong>{{__('Link')}}</strong></label>
+                                                        <input type="url" class="form-control @error('link') is-invalid @enderror"id="link" name="link">
+                                                        @error('link')
+                                                        <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
+                                                        @enderror
+                                                    </div>
+                                                    </div>
+
                                                 </div>
                                             @endif
                                             @if ($indice == "midiaExtra")
                                                 <div class="row justify-content-center">
-                                                    @foreach ($modalidade->midiasExtra as $midia)
-                                                        <div class="col-sm-12" style="margin-top: 20px;">
-                                                            <label for="{{$midia->hyphenizeNome()}}"
-                                                                class="col-form-label"><strong>{{$midia->nome}}</strong>
-                                                            </label>
-                                                            <div class="custom-file">
-                                                                <input type="file" class="filestyle"
-                                                                    data-placeholder="Nenhum arquivo" data-text="Selecionar"
-                                                                    data-btnClass="btn-primary-lmts" name="{{$midia->hyphenizeNome()}}" required>
+                                                    @if (isset($modalidade) && $modalidade->midiasExtra)
+                                                        @foreach ($modalidade->midiasExtra as $midia)
+                                                            <div class="col-sm-12" style="margin-top: 20px;">
+                                                                <label for="{{$midia->hyphenizeNome()}}"
+                                                                    class="col-form-label"><strong>{{$midia->nome}}</strong>
+                                                                </label>
+                                                                <div class="custom-file">
+                                                                    <input type="file" class="filestyle"
+                                                                        data-placeholder="Nenhum arquivo" data-text="Selecionar"
+                                                                        data-btnClass="btn-primary-lmts" name="{{$midia->hyphenizeNome()}}" required>
+                                                                </div>
+                                                                <small><strong>Extensão de arquivos aceitas:</strong>
+                                                                    @foreach ($midia->tiposAceitos() as $item)
+                                                                        @if ($loop->first)
+                                                                            <span> .{{$item}}</span>
+                                                                        @elseif ($loop->last)
+                                                                            <span> .{{$item}}.</span>
+                                                                        @else
+                                                                            <span> .{{$item}},</span>
+                                                                        @endif
+                                                                    @endforeach</small>
+                                                                @error($midia->nome)
+                                                                <span class="invalid-feedback" role="alert"
+                                                                    style="overflow: visible; display:block">
+                                                                    <strong>{{ $message }}</strong>
+                                                                </span>
+                                                                @enderror
                                                             </div>
-                                                            <small><strong>Extensão de arquivos aceitas:</strong>
-                                                                @foreach ($midia->tiposAceitos() as $item)
-                                                                    @if ($loop->first)
-                                                                        <span> .{{$item}}</span>
-                                                                    @elseif ($loop->last)
-                                                                        <span> .{{$item}}.</span>
-                                                                    @else
-                                                                        <span> .{{$item}},</span>
-                                                                    @endif
-                                                                @endforeach</small>
-                                                            @error($midia->nome)
-                                                            <span class="invalid-feedback" role="alert"
-                                                                style="overflow: visible; display:block">
-                                                                <strong>{{ $message }}</strong>
-                                                            </span>
-                                                            @enderror
-                                                        </div>
-                                                    @endforeach
+                                                        @endforeach
+                                                    @endif
                                                 </div>
                                             @endif
                                             @if ($indice == "etiquetacampoextra1")
@@ -1034,23 +1049,26 @@
         foreach($modalidades as $m) {
             $extensoesPorModalidade[$m->id] = $m->tiposAceitos();
         }
+        $modalidadesData = array_map(function($m) {
+        return [
+            'id'           => $m->id,
+            'maxCoautores' => $m->numMaxCoautores,
+            'requiresLink' => (bool) $m->link,
+            'defaultLink'  => $m->link ?? ''
+        ];
+    }, $modalidades);
     @endphp
 @endsection
 
 @section('javascript')
     <script>
-        const modalidadesData = @json(
-            array_map(function($m) {
-                return [
-                    'id'           => $m->id,
-                    'maxCoautores' => $m->numMaxCoautores
-                ];
-            }, $modalidades)
-        );
+        const modalidadesData = @json($modalidadesData);
         const modalidadesExtensoes = @json($extensoesPorModalidade);
         document.addEventListener('DOMContentLoaded', function() {
         const selectModalidade = document.getElementById('modalidade');
         const spanExtensoes    = document.getElementById('extensoes-aceitas');
+        const linkContainer    = document.getElementById('link-container');
+        const linkInput        = document.getElementById('link');
         function atualizarExtensoes() {
             // id da modalidade:
             const modalidadeId = selectModalidade.value;
@@ -1062,8 +1080,28 @@
             });
             spanExtensoes.innerHTML = html;
         }
+        function atualizarLink() {
+                const selId = Number(selectModalidade.value);
+                const m     = modalidadesData.find(x => x.id === selId);
+
+                if (m && m.requiresLink) {
+                    linkContainer.style.display = 'flex';
+                    linkInput.required = true;
+                    linkInput.value = m.defaultLink;
+                } else {
+                    linkContainer.style.display = 'none';
+                    linkInput.required = false;
+                    linkInput.value = '';
+                }
+            }
+
+        atualizarLink();
         atualizarExtensoes();
-        selectModalidade.addEventListener('change', atualizarExtensoes);
+        // Comentado para permitir que o formulário GET funcione corretamente
+        // selectModalidade.addEventListener('change', () => {
+        //     atualizarExtensoes();
+        //     atualizarLink();
+        // });
         });
         function handler() {
             usuario = @json(auth()->user());
@@ -1225,6 +1263,13 @@
             $('#errorModal .modal-body ul').html('<li>' + message + '</li>');
             // abre o modal
             $('#errorModal').modal('show');
+        }
+
+        function alterarModalidade(modalidadeId) {
+            if (modalidadeId && modalidadeId !== '') {
+                const eventoId = {{ $evento->id }};
+                window.location.href = `/trabalho/submeter/${eventoId}/${modalidadeId}`;
+            }
         }
     </script>
 @endsection

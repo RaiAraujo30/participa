@@ -17,7 +17,7 @@ class Modalidade extends Model
         'eventoId', 'texto', 'arquivo', 'caracteres', 'mincaracteres',
         'maxcaracteres', 'palavras', 'minpalavras', 'maxpalavras',
         'pdf', 'jpg', 'jpeg', 'png', 'docx', 'odt', 'zip', 'svg', 'mp4', 'mp3', 'ogg', 'wav', 'ogv', 'mpg', 'mpeg', 'mkv', 'avi', 'odp', 'pptx', 'csv', 'ods', 'xlsx',
-        'regra', 'template', 'modelo_apresentacao', 'instrucoes','numMaxCoautores', 'nome_en', 'nome_es'
+        'regra', 'template', 'modelo_apresentacao', 'instrucoes','numMaxCoautores', 'nome_en', 'nome_es', 'link'
     ];
 
     public function trabalho()
@@ -111,7 +111,7 @@ class Modalidade extends Model
 
     public function tiposAceitos()
     {
-        $extensoes = ['ogg', 'wav', 'ogv', 'mpg', 'mpeg', 'mkv', 'avi', 'odp', 'pptx', 'csv', 'ods', 'xlsx', 'pdf', 'jpg', 'jpeg', 'png', 'docx', 'odt', 'zip', 'svg', 'mp4', 'mp3'];
+        $extensoes = ['ogg', 'wav', 'ogv', 'mpg', 'mpeg', 'mkv', 'avi', 'odp', 'pptx', 'csv', 'ods', 'xlsx', 'pdf', 'jpg', 'jpeg', 'png', 'docx', 'odt', 'zip', 'svg', 'mp4', 'mp3', 'link'];
         $tiposcadastrados = array_filter($this->getAttributes(), function ($value, $key) use ($extensoes) {
             if ($value == true && in_array($key, $extensoes)) {
                 return $key;
