@@ -882,7 +882,7 @@ class CertificadoController extends Controller
 
     public function validar(Request $request)
     {
-        $hash_url = $request->input('hash') ?: $request->route('hash');
+        $hash_url = $request->input('hash');
 
          if ($hash_url) {
             $hash_decodificado = urldecode($hash_url);
