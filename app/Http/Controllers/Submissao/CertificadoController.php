@@ -809,7 +809,7 @@ class CertificadoController extends Controller
                 case Certificado::TIPO_ENUM['outras_comissoes']:
                     foreach ($destinatariosIds as $i => $destinarioId) {
                         $validacao = $validacoes[$i];
-                        $url_validacao_direta = route('validarCertificado', ['hash' => $validacao]);
+                        $url_validacao_direta = route('certificado.view', ['hash' => urlencode($validacao)], true);
                         $qrcode = base64_encode(QrCode::generate($url_validacao_direta));
                         $certificado->usuarios()->attach($destinarioId, ['validacao' => $validacao, 'comissao_id' => $comissaoId]);
                         $user = User::find($destinarioId);
@@ -935,17 +935,25 @@ class CertificadoController extends Controller
             ]);
         }
 
-        $request->validate([
-            'hash' => ['required','string','max:128'],
-            'tipo' => ['required','in:certificado,aceite'],
-        ]);
+        if ($request->has('hash')) {
+            $request->validate([
+                'hash' => ['required','string','max:128'],
+                'tipo' => ['required','in:certificado,aceite'],
+            ]);
+            
+            $hash_form = trim($request->input('hash'));
+            
+            $certificado_users = DB::table('certificado_user')
+                ->where('valido', true)
+                ->get();
+            
+            $certificado_user = $certificado_users->filter(function ($item) use ($hash_form) {
+                return Hash::check($hash_form, $item->validacao);
+            })->first();
 
-        $certificado_user = DB::table('certificado_user')->where([
-            ['validacao', '=', $request['hash']],
-            ['valido', '=', true],
-        ])->first();
-
-        return $this->gerar_pdf($certificado_user);
+            return $this->gerar_pdf($certificado_user);
+        }
+        return $this->validarCertificadoForm();
     }
 
     public function validarCertificadoPorCpf(Request $request)
