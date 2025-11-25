@@ -886,12 +886,10 @@ class CertificadoController extends Controller
 
          if ($hash) {
             $hash_decodificado = urldecode($hash);
-            $certificado_user = DB::table('certificado_user')
-            ->where('valido', true)
-            ->get()
-            ->filter(function ($item) use ($hash_decodificado) {
-                return Hash::check($hash_decodificado, $item->validacao);
-            })->first();
+            $certificado_user = DB::table('certificado_user')->where([
+                ['validacao', '=', urldecode($hash_url)], 
+                ['valido', '=', true],
+            ])->first();
 
             if ($certificado_user) {
                 return $this->gerar_pdf($certificado_user);
