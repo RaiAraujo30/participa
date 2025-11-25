@@ -882,19 +882,21 @@ class CertificadoController extends Controller
 
     public function validar(Request $request)
     {
-        $hash_url = $request->input('hash');
+        $hash = $request->input('hash') ?: $request->route('hash');
 
          if ($hash_url) {
-            $hash_decodificado = urldecode($hash_url);
-            $certificado_user = DB::table('certificado_user')->where([
-                ['validacao', '=', urldecode($hash_url)], 
-                ['valido', '=', true],
-            ])->first();
+            $hash_decodificado = urldecode($hash);
+            $certificado_user = DB::table('certificado_user')
+            ->where('valido', true)
+            ->get()
+            ->filter(function ($item) use ($hash_decodificado) {
+                return Hash::check($hash_decodificado, $item->validacao);
+            })->first();
 
             if ($certificado_user) {
                 return $this->gerar_pdf($certificado_user);
             } else {
-                return redirect()->route('validarCertificadoForm')->withErrors(['hash' => 'Código de validação não encontrado ou inválido.'])->withInput(['hash' => $hash_url]);
+                return redirect()->route('validarCertificado')->withErrors(['hash' => 'Código de validação não encontrado ou inválido.'])->withInput(['hash' => $hash_url]);
             }
         }
         
