@@ -765,7 +765,8 @@ class CertificadoController extends Controller
 
                     foreach ($destinatariosIds as $i => $destinarioId) {
                         $validacao = $validacoes[$i];
-                        $qrcode = base64_encode(QrCode::generate($validacao));
+                        $url_validacao_direta = route('certificado.view', ['hash' => urlencode($validacao)], true);
+                        $qrcode = base64_encode(QrCode::generate($url_validacao_direta));
                         $certificado->usuarios()->attach($destinarioId, ['validacao' => $validacao]);
                         $user = User::find($destinarioId);
                         $texto = $certificado->texto;
@@ -792,7 +793,8 @@ class CertificadoController extends Controller
                 case Certificado::TIPO_ENUM['expositor']:
                     foreach ($destinatariosIds as $i => $destinarioId) {
                         $validacao = $validacoes[$i];
-                        $qrcode = base64_encode(QrCode::generate($validacao));
+                        $url_validacao_direta = route('certificado.view', ['hash' => urlencode($validacao)], true);
+                        $qrcode = base64_encode(QrCode::generate($url_validacao_direta));
                         $certificado->usuarios()->attach($destinarioId, ['validacao' => $validacao, 'palestra_id' => $palestraIds[$i]]);
                         $user = Palestrante::find($destinarioId);
                         $palestra = Palestra::find($palestraIds[$i]);
@@ -827,7 +829,8 @@ class CertificadoController extends Controller
                 case Certificado::TIPO_ENUM['inscrito_atividade']:
                     foreach ($destinatariosIds as $i => $destinarioId) {
                         $validacao = $validacoes[$i];
-                        $qrcode = base64_encode(QrCode::generate($validacao));
+                        $url_validacao_direta = route('certificado.view', ['hash' => urlencode($validacao)], true);
+                        $qrcode = base64_encode(QrCode::generate($url_validacao_direta));
                         $certificado->usuarios()->attach($destinarioId, ['validacao' => $validacao, 'atividade_id' => $atividadeIds[$i]]);
                         $user = User::find($destinarioId);
                         $atividade = Atividade::find($atividadeIds[$i]);
