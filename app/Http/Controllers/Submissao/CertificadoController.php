@@ -730,6 +730,11 @@ class CertificadoController extends Controller
                         $certificado->usuarios()->attach($destinarioId, ['validacao' => $validacao, 'trabalho_id' => $trabalhoIds[$i]]);
 
                         $user = User::find($destinarioId);
+                        
+                        if (empty($user) || empty($user->email)) {
+                            continue;
+                        }
+                        
                         $trabalho = Trabalho::find($trabalhoIds[$i]);
                         $coautores = $trabalho->coautors()->with('user')->get()->pluck('user.name')->join(', ', ' e ');
                         $texto = $certificado->texto;
