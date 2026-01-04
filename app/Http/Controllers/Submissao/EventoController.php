@@ -489,6 +489,74 @@ class EventoController extends Controller
         return response()->download($caminhoZip, $nomeZip)->deleteFileAfterSend(true);
     }
 
+    public function downloadTrabalhosAprovadosEixo(Request $request)
+    {
+        $evento = Evento::find($request->eventoId);
+        $this->authorize('isCoordenadorOrCoordCientificaOrCoordEixo', $evento);
+        
+        $eixoSelecionado = $request->get('eixo_id');
+        
+        if (!$eixoSelecionado) {
+            return redirect()->back()->with('error', 'Nenhum eixo foi selecionado.');
+        }
+
+        $area = Area::find($eixoSelecionado);
+
+        $trabalhos = Trabalho::where('eventoId', $evento->id)
+            ->where('areaId', $eixoSelecionado)
+            ->where('status', '!=', 'arquivado')
+            ->where('aprovado', true)
+            ->with(['arquivo', 'modalidade:id,nome'])
+            ->get();
+
+        if ($trabalhos->isEmpty()) {
+            return redirect()->back()->with('error', 'Nenhum trabalho APROVADO encontrado para este eixo.');
+        }
+
+        set_time_limit(1200); 
+        ini_set('memory_limit', '512M');
+
+        $nomeZip = 'trabalhos_APROVADOS_' . \Illuminate\Support\Str::slug($area->nome) . '_' . date('Y-m-d_His') . '.zip';
+        $caminhoZip = storage_path('app/temp/' . $nomeZip);
+
+        if (!file_exists(storage_path('app/temp'))) {
+            mkdir(storage_path('app/temp'), 0755, true);
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($caminhoZip, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            return redirect()->back()->with('error', 'Não foi possível criar o arquivo ZIP.');
+        }
+
+        $arquivosAdicionados = 0;
+
+        foreach ($trabalhos as $trabalho) {
+            $arquivo = $trabalho->arquivo()->where('versaoFinal', true)->first() ?? $trabalho->arquivo()->first();
+            
+            if ($arquivo && \Storage::disk()->exists($arquivo->nome)) {
+                $caminhoArquivo = storage_path('app/' . $arquivo->nome);
+                $modalidadeNome = $trabalho->modalidade ? \Illuminate\Support\Str::slug($trabalho->modalidade->nome) : 'sem-modalidade';
+                $tituloSlug = \Illuminate\Support\Str::slug(substr($trabalho->titulo, 0, 50));
+                $extensao = pathinfo($arquivo->nome, PATHINFO_EXTENSION);
+                
+                $nomeArquivoZip = "{$modalidadeNome}/{$trabalho->id}_{$tituloSlug}.{$extensao}";
+                
+                if ($zip->addFile($caminhoArquivo, $nomeArquivoZip)) {
+                    $arquivosAdicionados++;
+                }
+            }
+        }
+
+        $zip->close();
+
+        if ($arquivosAdicionados === 0) {
+            if (file_exists($caminhoZip)) unlink($caminhoZip);
+            return redirect()->back()->with('error', 'Os trabalhos aprovados não possuem arquivos anexados.');
+        }
+
+        return response()->download($caminhoZip, $nomeZip)->deleteFileAfterSend(true);
+    }
+
     public function listarAvaliacoes(Request $request, $column = 'titulo', $direction = 'asc', $status = 'rascunho')
     {
         $status = $request->input('status', $status);
