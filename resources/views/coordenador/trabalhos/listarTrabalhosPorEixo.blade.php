@@ -75,12 +75,21 @@
                 </div>
 
                 @if($trabalhos && $trabalhos->count() > 0)
-                    <a href="{{ route('coord.downloadTrabalhosEixo', ['eventoId' => $evento->id, 'eixo_id' => $eixoSelecionado, 'status' => $status]) }}" 
-                       class="btn btn-success"
-                       onclick="return confirm('Deseja baixar todos os trabalhos deste eixo (versão corrigida)? Isso pode levar alguns minutos dependendo da quantidade de trabalhos.');">
-                        <img src="{{ asset('img/icons/file-download-solid.svg') }}" style="width: 16px; margin-right: 5px;" alt="Download">
-                        Baixar Todos os Trabalhos (ZIP)
-                    </a>
+                    <div class="d-flex flex-column align-items-end">
+                        <a href="{{ route('coord.downloadTrabalhosEixo', ['eventoId' => $evento->id, 'eixo_id' => $eixoSelecionado, 'status' => $status]) }}" 
+                        class="btn btn-primary mb-2"
+                        onclick="return confirm('Deseja baixar todos os trabalhos deste eixo (versão corrigida)? Isso pode levar alguns minutos dependendo da quantidade de trabalhos.');">
+                            <img src="{{ asset('img/icons/file-download-solid.svg') }}" style="width: 16px; margin-right: 5px;" alt="Download">
+                            Baixar Todos os Trabalhos (ZIP)
+                        </a>
+                        <a href="{{ route('coord.downloadTrabalhosAprovadosEixo', ['eventoId' => $evento->id, 'eixo_id' => $eixoSelecionado]) }}" 
+                        class="btn btn-success"
+                        style="margin-left: 10px;"
+                        onclick="return confirm('Deseja baixar apenas os trabalhos APROVADOS deste eixo?');">
+                            <img src="{{ asset('img/icons/file-download-solid.svg') }}" style="width: 16px; margin-right: 5px;" alt="Download">
+                            Baixar Todos os Trabalhos Aprovados (ZIP)
+                        </a>
+                    </div>
                 @endif
             </div>
 
