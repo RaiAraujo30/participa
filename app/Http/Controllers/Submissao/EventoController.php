@@ -531,17 +531,30 @@ class EventoController extends Controller
         $arquivosAdicionados = 0;
 
         foreach ($trabalhos as $trabalho) {
-            $arquivo = $trabalho->arquivo()->where('versaoFinal', true)->first() ?? $trabalho->arquivo()->first();
-            
-            if ($arquivo && \Storage::disk()->exists($arquivo->nome)) {
-                $caminhoArquivo = storage_path('app/' . $arquivo->nome);
+            $arquivoModel = $trabalho->arquivoCorrecao;
+            $caminhoNoDisco = null;
+
+            if ($arquivoModel && \Storage::disk()->exists($arquivoModel->caminho)) {
+                $caminhoNoDisco = storage_path('app/' . $arquivoModel->caminho);
+                $nomeFinalZip = "_REVISADO";
+            } else {
+                $arquivoInicial = $trabalho->arquivo()->where('versaoFinal', true)->first() ?? $trabalho->arquivo()->first();
+                
+                if ($arquivoInicial && \Storage::disk()->exists($arquivoInicial->nome)) {
+                    $caminhoNoDisco = storage_path('app/' . $arquivoInicial->nome);
+                    $nomeFinalZip = "_INICIAL";
+                }
+            }
+
+            if ($caminhoNoDisco) {
                 $modalidadeNome = $trabalho->modalidade ? \Illuminate\Support\Str::slug($trabalho->modalidade->nome) : 'sem-modalidade';
                 $tituloSlug = \Illuminate\Support\Str::slug(substr($trabalho->titulo, 0, 50));
-                $extensao = pathinfo($arquivo->nome, PATHINFO_EXTENSION);
                 
-                $nomeArquivoZip = "{$modalidadeNome}/{$trabalho->id}_{$tituloSlug}.{$extensao}";
+                $extensao = pathinfo($caminhoNoDisco, PATHINFO_EXTENSION);
                 
-                if ($zip->addFile($caminhoArquivo, $nomeArquivoZip)) {
+                $nomeArquivoZip = "{$modalidadeNome}/{$trabalho->id}_{$tituloSlug}{$nomeFinalZip}.{$extensao}";
+                
+                if ($zip->addFile($caminhoNoDisco, $nomeArquivoZip)) {
                     $arquivosAdicionados++;
                 }
             }
